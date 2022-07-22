@@ -17,8 +17,8 @@ spring:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
       url: jdbc:mysql://localhost:3306/emos?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-      username: root
-      password: lmc033088
+      username: mysql用户名
+      password: musql密码
       initial-size: 2   #  初始连接数，一般与 cpu 核心相同
       max-active: 4    #  最大连接数，一般是 cpu 核心两倍
       min-idle: 2      #  最小闲置数，一般与 cpu 核心相同
@@ -32,7 +32,7 @@ spring:
     database: 0
     host: localhost
     port: 6379
-    password: lmc033088
+    password: redis密码
     jedis:
       pool:
         max-active: 1000
@@ -48,14 +48,14 @@ spring:
       database: emos
       authentication-database: admin
       username: admin
-      password: lmc033088
+      password: mongodb密码
   # rabbitmq
   rabbitmq:
     host: localhost
     port: 5672
     virtual-host: /emos
     username: emos
-    password: lmc033088
+    password: rabbitmq密码
 
   # json
   jackson:
@@ -67,8 +67,8 @@ spring:
     default-encoding: UTF-8
     host: smtp.qq.com
     port: 587
-    username: 1030104176@qq.com
-    password: porvjqussavtbchg
+    username: 你的邮箱
+    password: 密码
     properties:
       mail:
         smtp:
@@ -109,7 +109,7 @@ logging:
 # 项目所需参数
 emos:
   jwt:
-    secret: lmc033088
+    secret: 自定义的字符串
     expire: 5
     cacheExpire: 10
   face:
@@ -118,34 +118,31 @@ emos:
     # 人脸签到请求地址
     checkin-url: http://s5.z100.vip:16343/checkin
   email:
-    system: 1030104176@qq.com
-    hr: liu1030104176@163.com
+    system: 邮箱1
+    hr: 邮箱2
   # 人脸图片保存文件夹
   image-folder: /root/emos/image
   # 项目授权码，用于给人脸识别程序发送请求时使用
-  code: A704EB9EEE282CB1
+  code: 你的项目授权码
   # 万年历接口参数
   calendar:
     url: https://www.mxnzp.com/api/holiday/list/year/
-    app_id: sfnpeinfviypqmqi
-    app_secret: OE1SR0hoNzRGTWUzdFRnek9DQktpZz09
+    app_id: 你的appid
+    app_secret: 你的secret
   receiveNotify: http://localhost:8080/emos-wx-api/meeting/receiveNotify
 workflow:
   url:
-    base: http://s5.z100.vip:18293/emos-workflow
+    base: 你的 workflow 项目 baseUrl
     start-meeting-process: /workflow/startMeetingProcess
     delete-meeting-process: /workflow/deleteProcessById
     search-user-task-list: /workflow/searchUserTaskListByPage
     approval-task: /workflow/approvalTask
 wx:
-#  app-id: wx4cb8e9621950da45
-#  app-secret: 9d80f4125c50e1cf8bc6031c9319b2df
-  # 项目发布使用自己的开发者身份
-    app-id: wx94b83542108cee51
-    app-secret: 1d1e4204023d8fea860c0c938d17a337
+    app-id: 微信appID
+    app-secret: 微信secret
 trtc:
-  appid: 1400702946
-  key: 395eec7ac986e687288a4aabe0344f4e0af15b075c9baad0097334f4e204f3c5
+  appid: 你的appid
+  key: 你的key
   expire: 86400 # 86400s = 1天
 
 
