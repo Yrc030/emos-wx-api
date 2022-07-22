@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yrc.emos.wx.mapper.MeetingMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yrc.emos.wx.pojo.entity.MeetingEntity">
+        <id column="id" property="id"/>
+        <result column="uuid" property="uuid"/>
+        <result column="title" property="title"/>
+        <result column="creator_id" property="creatorId"/>
+        <result column="date" property="date"/>
+        <result column="place" property="place"/>
+        <result column="start" property="start"/>
+        <result column="end" property="end"/>
+        <result column="type" property="type"/>
+        <result column="members" property="members"/>
+        <result column="desc" property="desc"/>
+        <result column="instance_id" property="instanceId"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id
+        , uuid, title, creator_id, `date`, place, `start`, `end`, `type`, members, `desc`, instance_id, `status`, create_time
+    </sql>
+    <select id="selectGroupPageByDate" resultType="com.yrc.emos.wx.pojo.result.MeetingListGroupResult">
+        SELECT DATE_FORMAT(date, '%Y年%m月%d日') AS `date`
+        FROM tb_meeting m
+                 JOIN tb_user u1 ON JSON_CONTAINS(m.members, CAST(u1.id AS CHAR))
+                 JOIN tb_user u2 ON m.creator_id = u2.id
+        WHERE u1.id = #{userId}
+          AND m.`status` IN (3, 4)
+          AND u1.`status` = 1
+          AND u2.`status` = 1
+        GROUP BY date
+        ORDER BY date
+            LIMIT #{skip}, #{limit}
+    </select>
+    <select id="selectMeetingPage" resultType="com.yrc.emos.wx.pojo.result.MeetingListItemResult">
+        SELECT m.id,
+               m.uuid,
+               m.title,
+               u2.`name`,
+               IF(m.type = 1, '在线会议', '线下会议')   type,
+               IF(m.`status` = 3, '未开始', '进行中') `status`,
+               m.place,
+               m.`desc`,
+               DATE_FORMAT(m.date, '%Y-%m-%d') date,
+			    DATE_FORMAT(m.`start`,'%H:%i') `start`,
+			    DATE_FORMAT(m.`end`,'%H:%i') `end`,
+                JSON_LENGTH(m.members) num
+        FROM tb_meeting m
+        JOIN tb_user u1 ON JSON_CONTAINS(m.members, CAST(u1.id AS CHAR)) AND u1.`status` = 1
+        JOIN tb_user u2 ON u2.id = m.creator_id AND u2.`status` = 1
+        WHERE u1.id = #{userId} AND m.date = #{date} AND m.`status` IN (3, 4)
+        ORDER BY `date`, `start`, `end`
+        LIMIT #{skip}, #{limit}
+    </select>
+    <select id="isSameDept" resultType="java.lang.Boolean">
+        select IF(COUNT(DISTINCT dept_id) = 1, TRUE, FALSE) AS same_dept
+        FROM tb_meeting m
+                 JOIN tb_user u ON JSON_CONTAINS(m.members, JSON_ARRAY(u.id))
+        WHERE m.uuid = #{uuid}
+          AND u.`status` = 1;
+    </select>
+    <select id="selectMeetingDetailById" resultType="com.yrc.emos.wx.pojo.result.MeetingDetailResult">
+        SELECT m.uuid,
+               m.creator_id,
+               m.title,
+               m.date,
+               m.`start`,
+               m.`end`,
+               m.type,
+               m.status,
+               m.place,
+               m.`desc`,
+               m.instance_id
+        FROM tb_meeting m
+                 JOIN tb_user u ON m.creator_id = u.id
+        WHERE m.id = #{id}
+          AND u.`status` = 1
+    </select>
+    <select id="selectMeetingsByUserIdAndMonth"
+            resultType="com.yrc.emos.wx.pojo.result.GetMeetingsByUserIdAndMonthResult">
+        SELECT m.id,
+        m.title,
+        TIME_FORMAT(SUBTIME(m.`end`,m.`start`), '%H:%i') AS duration,
+        m.date,
+        TIME_FORMAT(m.`start`,'%H:%i') AS `start`,
+        IF(m.type = 1, '在线会议', '线下会议') AS type,
+        m.place,
+        u2.photo
+        FROM `tb_meeting` m
+        JOIN tb_user u1 ON JSON_CONTAINS(m.members, CAST(u1.id AS CHAR)) AND u1.`status` = 1
+        JOIN tb_user u2 ON m.creator_id = u2.id AND u2.`status` = 1
+        WHERE u1.id = #{userId}
+        AND m.`status` IN (3,4)
+        <if test="date != null">
+            AND DATE_FORMAT(date, '%Y-%c') = #{date}
+        </if>
+        LIMIT #{skip}, #{limit}
+    </select>
+    <select id="selectUserMeetingDatesInMonth" resultType="java.lang.String">
+        SELECT DISTINCT DATE_FORMAT(m.date, '%Y-%m-%d') AS date
+        FROM tb_meeting m
+            JOIN tb_user u
+        ON JSON_CONTAINS(m.members, CAST(u.id AS CHAR))
+        WHERE u.id = #{userId}
+          AND u.`status` = 1
+          AND m.`status` IN (3
+            , 4)
+          AND DATE_FORMAT(m.date
+            , '%Y-%c') = #{date}
+    </select>
+
+
+</mapper>

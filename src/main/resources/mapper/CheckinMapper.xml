@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yrc.emos.wx.mapper.CheckinMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yrc.emos.wx.pojo.entity.CheckinEntity">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="address" property="address"/>
+        <result column="country" property="country"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="district" property="district"/>
+        <result column="status" property="status"/>
+        <result column="risk" property="risk"/>
+        <result column="date" property="date"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id
+        , user_id, address, country, province, city, district, `status`, risk, `date`, create_time
+    </sql>
+
+    <select id="selectHasCheckin" resultType="java.lang.Boolean">
+        SELECT IF(COUNT(id), TRUE, FALSE)
+        FROM tb_checkin
+        WHERE user_id = #{userId}
+          AND date = CURRENT_DATE
+          AND create_time BETWEEN #{start}
+          AND #{end}
+    </select>
+
+    <select id="selectTodayCheckinInfo" resultType="com.yrc.emos.wx.pojo.form.UserCheckinForm">
+        SELECT
+               u.`name`,
+               u.photo,
+               d.dept_name,
+               c.address,
+               CASE
+                   WHEN c.`status` = 1 THEN '正常'
+                   WHEN c.`status` = 2 THEN '迟到'
+                   END                             `status`,
+               CASE
+                   WHEN c.risk = 1 THEN '低风险'
+                   WHEN c.risk = 2 THEN '中风险'
+                   WHEN c.risk = 3 THEN '高风险'
+                   END                             risk,
+               DATE_FORMAT(c.create_time, '%H:%i') checkin_time,
+               c.date
+        FROM tb_user u
+                 LEFT JOIN tb_dept d ON u.dept_id = d.id
+                 LEFT JOIN tb_checkin c ON u.id = c.user_id AND c.date = CURRENT_DATE
+        WHERE u.id = #{userId}
+          AND u.`status` = 1
+    </select>
+
+    <select id="selectWeekCheckinStatus" resultType="com.yrc.emos.wx.mapper.dto.CheckinDateStatusDto">
+        SELECT CAST(date AS CHAR) date,
+	    IF(`status` = 1, '正常', '迟到') `status`
+        FROM tb_checkin
+        WHERE user_id = #{userId}
+          AND date BETWEEN #{start}
+          AND #{end}
+    </select>
+
+
+</mapper>

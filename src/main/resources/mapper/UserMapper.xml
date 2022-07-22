@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yrc.emos.wx.mapper.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yrc.emos.wx.pojo.entity.UserEntity">
+        <id column="id" property="id"/>
+        <result column="open_id" property="openId"/>
+        <result column="nickname" property="nickname"/>
+        <result column="photo" property="photo"/>
+        <result column="name" property="name"/>
+        <result column="sex" property="sex"/>
+        <result column="tel" property="tel"/>
+        <result column="email" property="email"/>
+        <result column="hiredate" property="hiredate"/>
+        <result column="role" property="role"/>
+        <result column="root" property="root"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id
+        , open_id, nickname, photo, `name`, sex, tel, email, hiredate, role, root, dept_id, `status`, create_time
+    </sql>
+
+
+    <!--    <insert id="insertUser" parameterType="userEntity">-->
+    <!--        INSERT INTO tb_user-->
+    <!--        SET-->
+    <!--        <if test="et.openId != null">-->
+    <!--            open_id = #{et.openId},-->
+    <!--        </if>-->
+    <!--        <if test="et.nickname != null">-->
+    <!--            nickname = #{et.nickname},-->
+    <!--        </if>-->
+    <!--        <if test="et.photo != null">-->
+    <!--            photo = #{et.photo},-->
+    <!--        </if>-->
+    <!--        <if test="et.name != null">-->
+    <!--            name = #{et.name},-->
+    <!--        </if>-->
+    <!--        <if test="et.sex != null">-->
+    <!--            sex = #{et.sex},-->
+    <!--        </if>-->
+    <!--        <if test="et.tel != null">-->
+    <!--            tel = #{et.tel},-->
+    <!--        </if>-->
+    <!--        <if test="et.email !=null">-->
+    <!--            email=#{et.email},-->
+    <!--        </if>-->
+    <!--        <if test="et.hiredate != null">-->
+    <!--            hiredate = #{et.hiredate},-->
+    <!--        </if>-->
+    <!--        role = #{et.role},-->
+    <!--        root = #{et.root},-->
+    <!--        <if test="et.deptName != null">-->
+    <!--            dept_id = ( SELECT id FROM tb_dept WHERE dept_name = #{et.deptName} )-->
+    <!--        </if>-->
+    <!--        create_time = #{et.createTime}-->
+    <!--    </insert>-->
+
+    <insert id="insertUser" parameterType="userEntity">
+        INSERT INTO tb_user
+        SET
+        <if test="openId != null">
+            open_id = #{openId},
+        </if>
+        <if test="nickname != null">
+            nickname = #{nickname},
+        </if>
+        <if test="photo != null">
+            photo = #{photo},
+        </if>
+        <if test="name != null">
+            name = #{name},
+        </if>
+        <if test="sex != null">
+            sex = #{sex},
+        </if>
+        <if test="tel != null">
+            tel = #{tel},
+        </if>
+        <if test="email !=null">
+            email=#{email},
+        </if>
+        <if test="hiredate != null">
+            hiredate = #{hiredate},
+        </if>
+        role = #{role},
+        root = #{root},
+        <if test="deptName != null">
+            dept_id = ( SELECT id FROM tb_dept WHERE dept_name = #{deptName} )
+        </if>
+        create_time = #{createTime}
+    </insert>
+    <select id="selectUserPermissions" resultType="java.lang.String">
+        SELECT DISTINCT p.permission_name
+        FROM tb_user u
+                 JOIN tb_role r ON JSON_CONTAINS(u.role, CAST(r.id AS CHAR))
+                 JOIN tb_permission p ON JSON_CONTAINS(r.permissions, CAST(p.id AS CHAR))
+        WHERE u.id = #{userId}
+          AND u.status = 1
+    </select>
+    <select id="selectIdByOpenId" resultType="java.lang.Integer">
+        SELECT id
+        FROM tb_user
+        WHERE open_id = #{openId}
+          AND `status` = 1;
+    </select>
+    <select id="selectUsernameAndDeptName" resultType="java.util.HashMap">
+        SELECT u.name username, d.dept_name dept_name
+        FROM tb_user u
+                 LEFT JOIN tb_dept d ON u.dept_id = d.id
+        WHERE u.id = #{userId}
+          AND u.`status` = 1
+    </select>
+    <select id="selectUserHiredate" resultType="java.lang.String">
+        SELECT hiredate
+        FROM tb_user
+        WHERE id = #{userId}
+          AND `status` = 1
+    </select>
+    <select id="selectUserSummary" resultType="com.yrc.emos.wx.pojo.form.UserSummaryForm">
+        SELECT u.name, u.photo, IF(d.dept_name, d.dept_name, '无') dept_name
+        FROM tb_user u
+                 LEFT JOIN tb_dept d
+                           ON u.dept_id = d.id
+        WHERE u.id = #{userId}
+          AND u.`status` = 1
+    </select>
+    <select id="selectAllWithDeptName" resultType="com.yrc.emos.wx.pojo.entity.UserEntity">
+        SELECT u.id, u.`name`, u.photo, d.dept_name
+        FROM tb_user u
+                 LEFT JOIN tb_dept d ON u.dept_id = d.id
+        WHERE u.`status` = 1
+    </select>
+    <select id="selectMembersByKeyword" resultType="com.yrc.emos.wx.pojo.result.MemberResult">
+        SELECT
+        d.id AS deptId,
+        d.dept_name AS deptName,
+        u.id AS userId,
+        u.name
+        FROM tb_user u
+        JOIN tb_dept d ON u.dept_id = d.id
+        WHERE u.`status` = 1
+        <if test="keyword != null and keyword != ''">
+            AND (u.`name` LIKE '%${keyword}%' OR d.dept_name LIKE '%${keyword}%')
+        </if>
+        ORDER BY d.id, u.name
+    </select>
+    <select id="selectUserInfo" resultType="com.yrc.emos.wx.pojo.entity.UserEntity">
+        SELECT u.id,
+               u.open_id,
+               u.nickname,
+               u.`name`,
+               u.photo,
+               u.sex,
+               u.tel,
+               u.email,
+               d.dept_name,
+               u.hiredate,
+               u.`status`,
+               (SELECT GROUP_CONCAT(role_name SEPARATOR ', ')
+                FROM tb_role
+                WHERE JSON_CONTAINS(u.role, JSON_ARRAY(id))
+               ) AS roles
+        FROM tb_user u
+                 LEFT JOIN tb_dept d ON u.dept_id = d.id
+        WHERE u.id = #{userId}
+          AND u.`status` = 1
+    </select>
+    <select id="selectManagerIdInUserDept" resultType="java.lang.Integer">
+        SELECT u2.id
+        FROM tb_user u1
+                 JOIN tb_user u2 ON u1.dept_id = u2.dept_id
+        WHERE u1.id = #{userId}
+          AND u1.`status` = 1
+          AND JSON_CONTAINS(u2.role, JSON_ARRAY(2))
+          AND u2.`status` = 1
+    </select>
+    <select id="selectGMId" resultType="java.lang.Integer">
+        SELECT id
+        FROM tb_user
+        WHERE JSON_CONTAINS(role, JSON_ARRAY(1))
+          AND `status` = 1
+    </select>
+    <select id="selectMembersByMeetingId" resultType="com.yrc.emos.wx.pojo.result.MemberResult">
+        SELECT u.id AS userId,
+               u.`name`,
+               u.photo
+        FROM tb_meeting m
+                 JOIN tb_user u ON JSON_CONTAINS(m.members, CAST(u.id AS CHAR))
+        WHERE m.id = #{meetingId}
+          AND u.`status` = 1
+    </select>
+    <select id="selectManagerIdInDept" resultType="java.lang.Integer">
+        SELECT id
+        FROM tb_user
+        WHERE dept_id = #{deptId}
+          AND `status` = 1
+          AND JSON_CONTAINS(role, '2')
+    </select>
+    <select id="selectContactList"
+            resultType="com.yrc.emos.wx.pojo.result.GetContactsListResult$ContactResult">
+        SELECT
+            u.name,
+            IFNULL(d.dept_name,'其它') AS dept,
+            IFNULL(u.tel,'') AS tel
+        FROM tb_user u LEFT JOIN tb_dept d ON u.dept_id=d.id
+        WHERE u.status = 1
+        ORDER BY CONVERT(u.name using gbk) ASC;
+    </select>
+
+
+</mapper>

@@ -1,0 +1,153 @@
+# server
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    threads:
+      max: 200
+      min-spare: 30
+    connection-timeout: 5000ms
+  port: 8080
+  servlet:
+    context-path: /emos-wx-api
+
+# mysql
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/emos?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+      username: root
+      password: lmc033088
+      initial-size: 2   #  初始连接数，一般与 cpu 核心相同
+      max-active: 4    #  最大连接数，一般是 cpu 核心两倍
+      min-idle: 2      #  最小闲置数，一般与 cpu 核心相同
+      max-wait: 60000
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+
+  # redis
+  redis:
+    database: 0
+    host: localhost
+    port: 6379
+    password: lmc033088
+    jedis:
+      pool:
+        max-active: 1000
+        max-wait: -1ms
+        max-idle: 16
+        min-idle: 8
+
+  # mongodb
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: emos
+      authentication-database: admin
+      username: admin
+      password: lmc033088
+  # rabbitmq
+  rabbitmq:
+    host: localhost
+    port: 5672
+    virtual-host: /emos
+    username: emos
+    password: lmc033088
+
+  # json
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+  # 邮箱
+  mail:
+    default-encoding: UTF-8
+    host: smtp.qq.com
+    port: 587
+    username: 1030104176@qq.com
+    password: porvjqussavtbchg
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+# mybatis-plus
+mybatis-plus:
+  global-config:
+    db-config:
+      # 设置数据表的统一前缀
+      table-prefix: tb_
+      # 设置ID生成策略
+      id-type: auto
+      # 设置逻辑删除规则
+      logic-not-delete-value: 1
+      logic-delete-value: 0
+      # logic-delete-field:
+  configuration:
+    # 配置日志输出sql语句
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  # 配置实体类的包路径用于设置别名
+  type-aliases-package: com.yrc.emos.wx.pojo.entity
+  # 配置 mapper.xml 文件对应的位置
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+
+# log
+logging:
+  level:
+    root: info
+    com.yrc.emos.wx.mapper: warn
+    com.yrc.emos.wx.task: debug
+  pattern:
+    console: "%d{HH:mm:ss}  %-5level  %msg%n"
+
+# 项目所需参数
+emos:
+  jwt:
+    secret: lmc033088
+    expire: 5
+    cacheExpire: 10
+  face:
+    # 创建人脸模型的请求地址
+    create-face-model-url: http://s5.z100.vip:16343/create_face_model
+    # 人脸签到请求地址
+    checkin-url: http://s5.z100.vip:16343/checkin
+  email:
+    system: 1030104176@qq.com
+    hr: liu1030104176@163.com
+  # 人脸图片保存文件夹
+  image-folder: /root/emos/image
+  # 项目授权码，用于给人脸识别程序发送请求时使用
+  code: A704EB9EEE282CB1
+  # 万年历接口参数
+  calendar:
+    url: https://www.mxnzp.com/api/holiday/list/year/
+    app_id: sfnpeinfviypqmqi
+    app_secret: OE1SR0hoNzRGTWUzdFRnek9DQktpZz09
+  receiveNotify: http://localhost:8080/emos-wx-api/meeting/receiveNotify
+workflow:
+  url:
+    base: http://s5.z100.vip:18293/emos-workflow
+    start-meeting-process: /workflow/startMeetingProcess
+    delete-meeting-process: /workflow/deleteProcessById
+    search-user-task-list: /workflow/searchUserTaskListByPage
+    approval-task: /workflow/approvalTask
+wx:
+#  app-id: wx4cb8e9621950da45
+#  app-secret: 9d80f4125c50e1cf8bc6031c9319b2df
+  # 项目发布使用自己的开发者身份
+    app-id: wx94b83542108cee51
+    app-secret: 1d1e4204023d8fea860c0c938d17a337
+trtc:
+  appid: 1400702946
+  key: 395eec7ac986e687288a4aabe0344f4e0af15b075c9baad0097334f4e204f3c5
+  expire: 86400 # 86400s = 1天
+
+
+
+

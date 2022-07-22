@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yrc.emos.wx.mapper.RoleMapper">
+
+    <!--    &lt;!&ndash; 通用查询映射结果 &ndash;&gt;-->
+    <!--    <resultMap id="BaseResultMap" type="com.yrc.emos.wx.pojo.entity.RoleEntity">-->
+    <!--        <id column="id" property="id"/>-->
+    <!--        <result column="role_name" property="roleName"/>-->
+    <!--        <result column="permissions" property="permissions"/>-->
+    <!--    </resultMap>-->
+
+    <!--    &lt;!&ndash; 通用查询结果列 &ndash;&gt;-->
+    <!--    <sql id="Base_Column_List">-->
+    <!--        id, role_name, permissions-->
+    <!--    </sql>-->
+    <select id="selectRoleOwnPermission" resultType="java.util.LinkedHashMap">
+        SELECT m.id                                                                AS moduleId,
+               p.id                                                                AS permissionId,
+               m.module_name                                                       AS moduleName,
+               a.action_name                                                       AS actionName,
+               IF(r.id IS NOT NULL, TRUE, FALSE)                                   AS selected,
+               IFNULL(JSON_CONTAINS(r.default_permissions, CAST(p.id AS CHAR)), 0) AS acquiescent
+        FROM tb_permission p
+                 JOIN tb_module m ON p.module_id = m.id
+                 JOIN tb_action a ON p.action_id = a.id
+                 LEFT JOIN tb_role r ON JSON_CONTAINS(r.permissions, CAST(p.id AS CHAR)) AND r.id = #{roleId}
+        ORDER BY p.module_id, p.action_id
+    </select>
+    <select id="selectUserRoleCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM tb_user u
+                 JOIN tb_role r ON JSON_CONTAINS(u.role, CAST(r.id AS CHAR))
+        WHERE r.id = #{roleId}
+    </select>
+    <select id="selectAllPermission" resultType="java.util.LinkedHashMap">
+        SELECT m.id          AS module_id,
+               p.id          AS permission_id,
+               m.module_name AS moduleName,
+               a.action_name AS actionName,
+               FALSE         AS selected
+        FROM tb_permission p
+                 JOIN tb_module m ON p.module_id = m.id
+                 JOIN tb_action a ON p.action_id = a.id
+        ORDER BY p.module_id, p.action_id
+    </select>
+
+</mapper>
