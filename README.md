@@ -11,3 +11,29 @@
 - 会议接口
 - 消息发送
 - 人脸识别
+
+
+
+开发环境和技术栈：
+
+- JDK 1.8
+
+- springboot 2.5.6
+
+- Maven
+
+- MySQL 8.0.23
+
+- Mybatis-Plus 3.5.1
+
+- Redis 6.0.10
+
+- MongoDB
+
+- Swagger2
+
+- Shrio
+
+- …
+
+  
